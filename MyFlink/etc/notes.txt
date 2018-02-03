@@ -1,2 +1,16 @@
 Access UI
 http://localhost:8081
+
+
+Socket Workcount Program
+========================
+Producer:
+nc -l 9000
+
+RUN:
+====
+/opt/flink-1.4.0/bin/flink run -c com.rueggerllc.flink.SocketTextstreamWordCount MyFlink.jar captain 9000
+
+LOG FILE:
+=========
+tail -f flink-hadoop-taskmanager-0-captain.out
