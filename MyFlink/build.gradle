@@ -21,6 +21,24 @@ dependencies {
 
 // Create a single Jar with all dependencies
 version = '1.0'
+jar {
+    baseName = project.name + '-fat'
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    
+    manifest {
+    	attributes 'Implementation-Title': 'FlinkStreamingFatJar', 
+        	       'Implementation-Version': version
+    }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
+
+
+
+
 task fatJar(type: Jar) {
 	manifest {
         attributes 'Implementation-Title': 'Flink Example',
