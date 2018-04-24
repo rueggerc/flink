@@ -24,51 +24,100 @@ import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.util.Collector;
 
-/**
- * Implements the "WordCount" program that computes a simple word occurrence histogram
- * over some sample data
- *
- * <p>This example shows how to:
- * <ul>
- * <li>write a simple Flink program.
- * <li>use Tuple data types.
- * <li>write and use user-defined functions.
- * </ul>
- *
- */
-public class WordCount {
+import com.rueggerllc.flink.beans.WordCountBean;
 
-	//
-	//	Program
-	//
+public class WordCount {
 
 	public static void main(String[] args) throws Exception {
 		
-		System.out.println("HERE WE GO WITH WORD COUNT");
-
-		// set up the execution environment
-		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-
-		// Get input data
-//		DataSet<String> text = env.fromElements(
-//				"To be, or not to be,--that is the question:--",
-//				"Whether 'tis nobler in the mind to suffer",
-//				"The slings and arrows of outrageous fortune",
-//				"Or to take arms against a sea of troubles",
-//				"Yo Ruge here is some extra input Foo Bar Foo Foo"
-//				);
-
-		// HDFS
-		DataSet<String> text = env.readTextFile("hdfs://captain:9000/inputs/word_count.text");
-		DataSet<Tuple2<String, Integer>> counts =
-				text.flatMap(new LineSplitter())
-				.groupBy(0)
-				.sum(1);
-
-		// execute and print result
-		counts.print();
-
+		try {
+			System.out.println("HERE WE GO WITH WORD COUNT");
+	
+			// Setup
+			ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+			
+			execute0(env);
+			// execute1(env);
+			// execute2(env);
+			// execute3(env);
+			// execute4(env);
+			// execute5(env);
+		
+		} catch (Exception e) {
+			System.out.println("ERROR:\n" + e);
+		}
 	}
+	
+	private static void execute0(ExecutionEnvironment env) throws Exception {
+		DataSet<String> text = env.readTextFile("C://data//foo.txt");
+		DataSet<Tuple2<String, Integer>> counts = text
+			.flatMap(new LineSplitter())
+			.groupBy(0)
+			.sum(1);
+		counts.print();		
+	}
+	
+	private static void execute1(ExecutionEnvironment env) throws Exception {
+		DataSet<String> text = env.readTextFile("C://data//foo.txt");
+		DataSet<Tuple2<String, Integer>> counts = text.flatMap(new LineSplitter());
+		DataSet<Tuple2<String, Integer>> results = counts.groupBy(0).sum(1);
+		results.print();		
+	}
+	
+	private static void execute2(ExecutionEnvironment env) throws Exception {
+		DataSet<String> text = env.fromElements(
+		"To be, or not to be,--that is the question:--",
+		"Whether 'tis nobler in the mind to suffer",
+		"The slings and arrows of outrageous fortune",
+		"Or to take arms against a sea of troubles",
+		"Yo Ruge here is some extra input Foo Bar Foo Foo"
+		);
+		DataSet<Tuple2<String, Integer>> counts = text.flatMap(new LineSplitter());
+		DataSet<Tuple2<String, Integer>> results = counts.groupBy(0).sum(1);
+		results.print();		
+	}
+	
+	private static void execute3(ExecutionEnvironment env) throws Exception {
+		DataSet<String> text = env.readTextFile("hdfs://captain:9000/inputs/word_count.text");
+		DataSet<Tuple2<String, Integer>> counts = text.flatMap(new LineSplitter());
+		DataSet<Tuple2<String, Integer>> results = counts.groupBy(0).sum(1);
+		results.print();		
+	}
+	
+	private static void execute4(ExecutionEnvironment env) throws Exception {
+		DataSet<String> text = env.readTextFile("C://data//foo.txt");
+		DataSet<Tuple2<String, Integer>> counts = 
+			text.flatMap(new FlatMapFunction<String,Tuple2<String,Integer>>() {
+				@Override 
+				public void flatMap(String line,Collector<Tuple2<String,Integer>> out) {
+					String[] tokens = line.toLowerCase().split("\\W+");
+					for (String token : tokens) {
+						if (token.length() > 0) {
+							out.collect(new Tuple2<String, Integer>(token, 1));
+						}
+					}		
+				}
+			});
+		DataSet<Tuple2<String, Integer>> results = counts.groupBy(0).sum(1);
+		results.print();		
+	}
+	
+	
+	private static void execute5(ExecutionEnvironment env) throws Exception {
+		DataSet<String> text = env.readTextFile("C://data//foo.txt");
+		DataSet<Tuple2<String, Integer>> counts = 
+			text.flatMap( (line, collector) -> {
+				String[] tokens = line.toLowerCase().split("\\W+");
+				for (String token : tokens) {
+					if (token.length() > 0) {
+						collector.collect(new Tuple2<String, Integer>(token, 1));
+					}
+				}				
+			});
+		DataSet<Tuple2<String, Integer>> results = counts.groupBy(0).sum(1);
+		results.print();		
+	}
+	
 
 
 	public static final class LineSplitter implements FlatMapFunction<String, Tuple2<String, Integer>> {

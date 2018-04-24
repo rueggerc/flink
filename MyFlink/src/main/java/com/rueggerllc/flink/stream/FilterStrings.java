@@ -2,6 +2,7 @@ package com.rueggerllc.flink.stream;
 
 
 import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
@@ -47,4 +48,15 @@ public class FilterStrings {
 			}
 		}
 	}
+	
+	public static class Mapper implements MapFunction<String,String> {
+		public String map(String input) throws Exception {
+			try {
+				return null;
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+	
 }
